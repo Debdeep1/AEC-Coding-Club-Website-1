@@ -3,6 +3,8 @@ node_modules
 dist
 dist-ssr
 *.local
+build/
+package-lock.json
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:

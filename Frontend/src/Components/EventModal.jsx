@@ -13,6 +13,9 @@ const EventModal = (props) => {
     'event-modal-container'
   )
   const [modalClass, setModalClass] = useState('event-modal')
+
+  const [imgError, setImgError] = useState(false)
+
   let navigate = useNavigate()
 
   const {
@@ -28,6 +31,12 @@ const EventModal = (props) => {
   } = cardEditData
 
   const addNewEvent = async () => {
+    if (imgError) {
+      toast.error('Invalid Image Link!', {
+        theme: 'dark',
+      })
+      return
+    }
     console.log('New Event Added')
     const Data = {
       eventTitle: editEventTitle,
@@ -43,20 +52,24 @@ const EventModal = (props) => {
       headers: { Authorization: `Bearer ${authToken}` },
     })
 
-    console.log("DATA :- ",data)
+    console.log('DATA :- ', data)
     if (data.success) {
       window.location.reload()
-    }
-    else{
-      console.log("error data:- ", data);
+    } else {
+      console.log('error data:- ', data)
       toast.error(data.error, {
-        theme: "dark",
+        theme: 'dark',
       })
     }
-
   }
 
   const editExistingEvent = async () => {
+    if (imgError) {
+      toast.error('Invalid Image Link!', {
+        theme: 'dark',
+      })
+      return
+    }
     console.log('Editing Event')
     const Data = {
       eventTitle: editEventTitle,
@@ -67,30 +80,31 @@ const EventModal = (props) => {
     console.log('Event Data :- ', Data)
 
     const authToken = localStorage.getItem('token')
-    const {data} = await axios.put(`${Api}update/${editEventID}`, Data, {
+    const { data } = await axios.put(`${Api}update/${editEventID}`, Data, {
       withCredentials: true,
       headers: { Authorization: `Bearer ${authToken}` },
     })
 
     if (data.success) {
       window.location.reload()
-    }
-    else{
-      console.log("error data:- ", data);
+    } else {
+      console.log('error data:- ', data)
       toast.error(data.error, {
-        theme: "dark",
+        theme: 'dark',
       })
     }
-    console.log("Data :- ", data)
+    console.log('Data :- ', data)
   }
 
   useEffect(() => {
     if (modalShow) {
       setModalContainerClass('event-modal-container show')
       setModalClass('event-modal modal-show')
+      document.body.classList.add('modal-showed')
     } else {
       setModalContainerClass('event-modal-container')
       setModalClass('event-modal')
+      document.body.classList.remove('modal-showed')
     }
   }, [modalShow])
 
@@ -107,7 +121,7 @@ const EventModal = (props) => {
             Add Event
           </h3>
           <div className='event-wrapper'>
-          {/* <form style={{all : 'revert'}}> */}
+            {/* <form style={{all : 'revert'}}> */}
             <div className='event-inputs'>
               <div className='input-wrapper'>
                 <label>
@@ -124,30 +138,17 @@ const EventModal = (props) => {
                 </label>
               </div>
 
-              <div className='input-wrapper date-time'>
-                <div className='date'>
-                  <label>
-                    <div className='label'>Date & Time:</div>
-                    <input
-                      value={editEventTime}
-                      onChange={(e) => setEditEventTime(e.target.value)}
-                      type='datetime-local'
-                      className='modal-inp date-inp'
-                      placeholder='Event date...'
-                    />
-                  </label>
-                </div>
-
-                <div className='duration'>
-                  <label>
-                    <div className='label'>Duration(Hrs):</div>
-                    <input
-                      type='number'
-                      className='modal-inp'
-                      placeholder='Event Duration...'
-                    />
-                  </label>
-                </div>
+              <div className='input-wrapper date'>
+                <label>
+                  <div className='label'>Date & Time:</div>
+                  <input
+                    value={editEventTime}
+                    onChange={(e) => setEditEventTime(e.target.value)}
+                    type='datetime-local'
+                    className='modal-inp date-inp'
+                    placeholder='Event date...'
+                  />
+                </label>
               </div>
 
               <div className='input-wrapper'>
@@ -166,7 +167,22 @@ const EventModal = (props) => {
 
               <div className='input-wrapper'>
                 <label>
-                  <div className='label'>Details:</div>
+                  <div className='label label-details'>
+                    Details:{' '}
+                    <a
+                      href='https://www.markdownguide.org/basic-syntax/'
+                      style={{
+                        textDecoration: 'none',
+                        color: '#D62828',
+                        textAlign: 'right',
+                        position: 'absolute',
+                        right: '0',
+                      }}
+                      target='_blank'
+                    >
+                      <b title='Markdown Reference'>ⓘ</b>
+                    </a>
+                  </div>
 
                   <textarea
                     value={editEventDetails}
@@ -174,7 +190,7 @@ const EventModal = (props) => {
                     placeholder='Add Event Description...'
                     className='modal-textarea'
                     style={{ resize: 'none' }}
-                    maxLength='150'
+                    maxLength='5000'
                   />
                 </label>
               </div>
@@ -190,7 +206,11 @@ const EventModal = (props) => {
             </div>
             {/* </form> */}
             <div className='preview'>
-              <PreviewEventCard cardEditData={cardEditData} />
+              <PreviewEventCard
+                cardEditData={cardEditData}
+                imgError={imgError}
+                setImgError={setImgError}
+              />
             </div>
           </div>
         </>
