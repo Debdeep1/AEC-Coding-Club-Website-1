@@ -5,7 +5,6 @@ const User = require("../models/User");
 exports.getlogs = async (req, res) => {
   try {
     const logs = await Elog.find({});
-    console.log(logs);
     res.status(200).json({ logs: logs.reverse(), length: logs.length });
   } catch (error) {
     console.log(error);
@@ -35,7 +34,6 @@ exports.branchdata = async (req, res) => {
     for (var i = 0; i < branch.length; i++) {
       total += branch[i];
     }
-    console.log(branch);
     res.json({
       CSE: cse,
       IT: it,
@@ -90,7 +88,6 @@ exports.alluser = async (req, res) => {
     }
   );
   allusers.reverse();
-  console.log(allusers);
   res.json({ users: allusers.reverse() });
 };
 
@@ -109,7 +106,7 @@ exports.eventsdata = async (req, res) => {
         updatedAt: false,
       }
     );
-    res.json({ eventdata : eventdata.reverse()});
+    res.json({ eventdata: eventdata.reverse() });
   } catch (error) {
     return res.json({ error: error.message });
   }

@@ -24,7 +24,6 @@ exports.announceall = async (req, res) => {
   for (i = 0; i < emails.length; i++) {
     emaillist.push(emails[i].email);
   }
-  console.log(emaillist);
 
   otpSender(
     emaillist,
@@ -84,9 +83,6 @@ exports.getAll = async (req, res) => {
 // Create New Event
 exports.add = async (req, res) => {
   try {
-    // const { error } = validator.event(req.body);
-    // if (error) return res.status(406).json({ error: "Invalid Event Data" });
-    console.log("data - ", req.body);
     if (
       !req.body.eventTitle ||
       !req.body.eventTime ||
@@ -100,11 +96,9 @@ exports.add = async (req, res) => {
       });
     }
     const newEvent = await event.create(req.body);
-    console.log(newEvent);
     const user_id = req.user.user_id;
     const userDetails = await User.findOne({ uid: req.user.user_id });
     const userName = userDetails.firstName + " " + userDetails.lastName;
-    console.log(userName);
 
     const logData = await Elog.create({
       Operation: "Event Addition",
@@ -115,14 +109,6 @@ exports.add = async (req, res) => {
       image: req.body.eventImage,
       updatedAt: Date(),
     });
-
-    console.log(
-      "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    );
-    console.log(logData);
-    console.log(
-      "------------------------------------------------------------------------------------"
-    );
 
     res.status(200).json({
       _id: newEvent._id,
@@ -144,7 +130,6 @@ exports.add = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const eventid = req.params.id;
-    console.log(eventid);
 
     if (
       !req.body.eventTitle ||
@@ -177,15 +162,6 @@ exports.update = async (req, res) => {
       updatedAt: Date(),
     });
 
-    console.log(
-      "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    );
-    console.log(eventid);
-    console.log(logData);
-    console.log(
-      "------------------------------------------------------------------------------------"
-    );
-
     if (!Event) {
       return res.json({
         Message: "Can't find any user like this",
@@ -206,41 +182,6 @@ exports.update = async (req, res) => {
       token: true,
     });
   }
-
-  // try {
-  //   const { error } = validator.event(req.body);
-  //   console.log(error);
-  //   if (error)
-  //     return res
-  //       .status(406)
-  //       .json({ success: false, token: true, error: "Invalid Event Data" });
-
-  //   const updatedEvent = await event.findByIdAndUpdate(
-  //     req.params.id,
-  //     req.body
-  //    { new: true, runValidators: true }
-  //   );
-
-  //   if (!updatedEvent)
-  //     return res
-  //       .status(404)
-  //       .json({ success: false, token: true, message: "Cannot Find Event" });
-
-  //   res.status(200).json({
-  //     _id: updatedEvent._id,
-  //     title: updatedEvent.title,
-  //     description: updatedEvent.description,
-  //     image: updatedEvent.image,
-  //     form: updatedEvent.form,
-  //     date: updatedEvent.date,
-  //     role: req.role,
-  //     success: true,
-  //   });
-  // } catch (error) {
-  //   res
-  //
-  //     .json({ success: false, token: true, error: "Cannot Update Event" });
-  // }
 };
 
 // Dete Specifit Event Based On It's ID
@@ -272,33 +213,6 @@ exports.deletevent = async (req, res) => {
         .json({ success: false, token: true, message: "Cannot Find Event" });
     }
 
-    // const logData = await Elog.updateOne(
-    //   { _id: req.params.id },
-    //   {
-    //     $push: {
-    //       history: {
-    //         modifier: user_id,
-    //         content: {
-    //           title: req.body.eventTitle,
-    //           data: req.body.eventDetails,
-    //           media: req.body.eventImage,
-    //           scheduleTime: req.body.eventTitle,
-    //         },
-    //         timestamps: Date(),
-    //       },
-    //     },
-    //   }
-    // );
-
-    console.log(
-      "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    );
-    console.log(req.user.user_id);
-    console.log(logData);
-    console.log(
-      "------------------------------------------------------------------------------------"
-    );
-
     res.status(200).json({
       success: true,
       token: true,
@@ -312,7 +226,6 @@ exports.deletevent = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
     res.json({
       token: true,
       error: "Cannot Delete Event",
@@ -326,7 +239,7 @@ exports.registerevent = async (req, res) => {
     const user_id = req.user.user_id;
 
     const tempuser = await User.findOne({ uid: user_id });
-    console.log(tempuser);
+    tempuser;
     if (tempuser.event.includes(id)) {
       return res.status(400).json({
         success: false,
@@ -344,7 +257,6 @@ exports.registerevent = async (req, res) => {
         },
       }
     );
-    console.log(updateevent);
     const updateuser = await User.updateOne(
       { uid: user_id },
       { $push: { event: id } }

@@ -69,16 +69,11 @@ exports.register = async (req, res) => {
     // *################################################################
     // ! OVERWRITING NOT VERIFIED USERS
     try {
-      console.log("before find");
       let count = await Counter.findOne({ branch: branch, batch: batch });
       const user_notActive = await User.findOne({ uid: count.notActive[0] });
-      console.log(`USER_NOTACTIVE : ${user_notActive}`);
       const userid = count.notActive[0];
-      console.log(
-        (Date.now() - user_notActive.timeStamp) / (1000 * 24 * 60 * 60)
-      );
+
       if (user_notActive) {
-        console.log("After find");
         if (
           (Date.now() - user_notActive.timeStamp) / (1000 * 24 * 60 * 60) >=
           1
@@ -111,7 +106,6 @@ exports.register = async (req, res) => {
             timeStamp: Date.now(),
           };
           const valuereturn = await User.findOneAndUpdate(filter, data);
-          console.log(valuereturn);
           const token = jwt.sign(
             {
               user_id: user_notActive.uid,
@@ -127,12 +121,10 @@ exports.register = async (req, res) => {
             { branch: branch, batch: batch },
             { $pull: { notActive: userid } }
           );
-          console.log(removefromarray);
           const notActive = await Counter.updateOne(
             { branch: branch, batch: batch },
             { $push: { notActive: user_notActive.uid } }
           );
-          console.log(notActive);
 
           return res.status(200).json({
             success: true,
@@ -143,10 +135,6 @@ exports.register = async (req, res) => {
       }
     } catch (error) {
       console.log(error.message);
-      // return res.json({
-      //   success: false,
-      //   error: error.message,
-      // });
     }
     // ! Injecting the Counter Part
     let countupdate;
@@ -157,26 +145,20 @@ exports.register = async (req, res) => {
         branch: branch,
         batch: batch,
       });
-      console.log("New Counter Created", countfresh);
       const countfreshfind = await Counter.findOne({
         branch: branch,
         batch: batch,
       });
-      console.log("Here is my Counter : ", countfreshfind);
       countupdate = await Counter.findByIdAndUpdate(
         { _id: countfreshfind._id },
         { $inc: { seq: 1 } }
       );
-      console.log(countupdate);
     } else {
-      console.log("Here is my Counter : ", count);
       countupdate = await Counter.findByIdAndUpdate(
         { _id: count._id },
         { $inc: { seq: 1 } }
       );
-      console.log(countupdate);
     }
-    // countupdate.seq = countupdate.seq + 0000
 
     // ! FORMATTING THE UID in Correct FORMAT
     let uid;
@@ -190,8 +172,6 @@ exports.register = async (req, res) => {
     } else {
       uid = `AECCC/${branch}/${batch}/${countupdate.seq}`;
     }
-    console.log(uid);
-    // console.log(User.count());
 
     // ! Sending OTP to user's email
 
@@ -222,7 +202,6 @@ exports.register = async (req, res) => {
         initialTimeStamp: Date.now(),
       },
     });
-    console.log(user);
 
     const token = jwt.sign(
       {
@@ -246,10 +225,7 @@ exports.register = async (req, res) => {
       { branch: branch, batch: batch },
       { $push: { notActive: user.uid } }
     );
-    console.log(notActive);
-    // Counter.notActive.push({ id: user.uid });
-    // Counter.save(done);
-    // setcookie("token", token, options);
+
     return res.status(200).json({
       success: true,
       token,
@@ -447,8 +423,6 @@ exports.verifyOTP = async (req, res) => {
             });
           }
         } else if (docs.otpstatus.otp != otp) {
-          console.log(docs.otpstatus.wrongTry);
-          console.log("uid: " + uid);
         } else if (docs.otpstatus.otpRequest < 5) {
           let otp = Math.floor(10000 + (1 - Math.random()) * 100000);
           let msg = `${otp}`;
@@ -486,9 +460,6 @@ exports.verifyOTP = async (req, res) => {
           });
         }
       } else if (docs.otpstatus.otp != otp) {
-        console.log(docs.otpstatus.wrongTry);
-        console.log("uid: " + uid);
-
         User.updateOne(
           { uid: uid },
           { $set: { "otpstatus.wrongTry": docs.otpstatus.wrongTry + 1 } }
@@ -508,33 +479,15 @@ exports.verifyOTP = async (req, res) => {
           { $set: { active: true, otpstatus: null } }
           // TODO: Remove the Activated User from Unactivated Array in Counter
         );
-        // .then((msg) => {})
-        // .catch((err) => {
-        //   console.log(err);
-        // });
-        // try {
         userupdate = await User.findOne({ uid: uid });
-        // console.log(userupdate);
-        console.log(`branch: ${userupdate.branch}, batch: ${userupdate.batch}`);
-        console.log(
-          " +++++++++++++++++++++++====================++++++++++++++++++++++"
-        );
+
         Counter.updateOne(
           { branch: userupdate.branch, batch: userupdate.batch },
           { $pull: { notActive: uid } }
         )
-          .then(() => {
-            console.log(
-              `notActive uid: ${uid} found in ${userupdate.branch}-${userupdate.batch}`
-            );
-          })
+          .then(() => {})
           .catch(() => {});
-        // } catch (error) {
-        //   return res.json({ success: false, message: error.message });
-        // }
-        console.log(
-          "-------------------++++++++++++__________++++++===================_-_-_-_-"
-        );
+
         return res
           .status(200)
           .send({ success: true, token: true, message: "account activated" });
